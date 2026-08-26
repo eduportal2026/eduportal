@@ -78,7 +78,7 @@ export default function ClientPortal({ apps, session }: { apps: any[], session: 
           <button 
             onClick={() => setSelectedCategory('ALL')}
             style={{ 
-              padding: '0.5rem 1.5rem', borderRadius: '9999px', border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'all 0.3s ease',
+              padding: '0.5rem 1.5rem', borderRadius: '9999px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.3s ease',
               background: selectedCategory === 'ALL' ? 'var(--primary-blue)' : 'white', 
               color: selectedCategory === 'ALL' ? 'white' : 'var(--primary-blue)', 
               boxShadow: selectedCategory === 'ALL' ? '0 4px 14px rgba(79, 70, 229, 0.4)' : '0 2px 10px rgba(0,0,0,0.05)',
@@ -92,7 +92,7 @@ export default function ClientPortal({ apps, session }: { apps: any[], session: 
               key={c}
               onClick={() => setSelectedCategory(c)}
               style={{ 
-                padding: '0.5rem 1.5rem', borderRadius: '9999px', border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'all 0.3s ease',
+                padding: '0.5rem 1.5rem', borderRadius: '9999px', cursor: 'pointer', fontWeight: 500, transition: 'all 0.3s ease',
                 background: selectedCategory === c ? 'var(--primary-blue)' : 'white', 
                 color: selectedCategory === c ? 'white' : 'var(--primary-blue)', 
                 boxShadow: selectedCategory === c ? '0 4px 14px rgba(79, 70, 229, 0.4)' : '0 2px 10px rgba(0,0,0,0.05)',

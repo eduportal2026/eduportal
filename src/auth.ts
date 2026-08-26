@@ -15,7 +15,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         console.log('--- LOGIN ATTEMPT ---');
         console.log('Username:', credentials.username);
-        console.log('Password length:', credentials.password?.length);
+        console.log('Password length:', (credentials.password as string)?.length);
 
         // Find user in DB
         const user = await prisma.user.findUnique({
