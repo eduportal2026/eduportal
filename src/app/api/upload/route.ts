@@ -14,19 +14,12 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate unique filename
-    const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    
-    // Ensure the uploads directory exists
-    await mkdir(uploadDir, { recursive: true });
-    
-    // Write file to public/uploads
-    const path = join(uploadDir, filename);
-    await writeFile(path, buffer);
+    // Convert to Base64 string so we don't need to save to disk on Vercel
+    const mimeType = file.type || 'image/jpeg';
+    const base64String = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
-    // Return the public URL
-    return NextResponse.json({ success: true, url: `/uploads/${filename}` });
+    // Return the Base64 URL directly
+    return NextResponse.json({ success: true, url: base64String });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json({ success: false, error: 'Upload failed' });
