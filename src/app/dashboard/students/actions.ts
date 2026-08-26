@@ -3,6 +3,7 @@
 import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import bcrypt from 'bcryptjs';
 
 export async function addStudent(data: any) {
   const session = await auth();
@@ -31,11 +32,13 @@ export async function addStudent(data: any) {
       }
     }
 
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    
     await prisma.user.create({
       data: {
         role: 'STUDENT',
         username: data.username,
-        password: data.password,
+        password: hashedPassword,
         title: data.title,
         firstName: data.firstName,
         lastName: data.lastName,
@@ -81,21 +84,26 @@ export async function updateStudent(id: string, data: any) {
       if (existing) return { success: false, error: 'รหัสนักเรียนนี้ถูกใช้งานแล้ว' };
     }
 
+    const updateData: any = {
+      username: data.username,
+      title: data.title,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      name: `${data.title || ''}${data.firstName || ''} ${data.lastName || ''}`.trim(),
+      email: data.email,
+      studentId: data.studentId,
+      rollNumber: data.rollNumber ? parseInt(data.rollNumber, 10) : null,
+      gradeLevel: data.gradeLevel,
+      room: data.room,
+    };
+
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 10);
+    }
+
     await prisma.user.update({
       where: { id },
-      data: {
-        username: data.username,
-        password: data.password,
-        title: data.title,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        name: `${data.title || ''}${data.firstName || ''} ${data.lastName || ''}`.trim(),
-        email: data.email,
-        studentId: data.studentId,
-        rollNumber: data.rollNumber ? parseInt(data.rollNumber, 10) : null,
-        gradeLevel: data.gradeLevel,
-        room: data.room,
-      }
+      data: updateData
     });
 
     revalidatePath('/dashboard/students');
@@ -161,11 +169,14 @@ export async function importStudents(studentsData: any[]) {
         continue;
       }
 
+      const plainPassword = data.password || data.username; // default to username if no password
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
       await prisma.user.create({
         data: {
           role: 'STUDENT',
           username: data.username,
-          password: data.password || data.username, // default to username if no password
+          password: hashedPassword,
           title: data.title || '',
           firstName: data.firstName || '',
           lastName: data.lastName || '',

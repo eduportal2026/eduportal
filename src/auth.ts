@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -23,14 +24,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         console.log('User found in DB:', user ? 'YES' : 'NO');
+        
+        let isPasswordMatch = false;
         if (user) {
-           console.log('DB Password length:', user.password.length);
-           console.log('Password match:', user.password === credentials.password);
+          try {
+            isPasswordMatch = await bcrypt.compare(credentials.password as string, user.password);
+          } catch (e) {
+            console.error('Bcrypt error:', e);
+          }
+          
+          // Fallback for non-hashed old passwords during transition
+          if (!isPasswordMatch && user.password === credentials.password) {
+            isPasswordMatch = true;
+          }
         }
 
-        // In a real app, compare hashed passwords using bcrypt
-        // For testing, we just check plaintext
-        if (user && user.password === credentials.password) {
+        if (user && isPasswordMatch) {
           return {
             id: user.id,
             name: user.name,

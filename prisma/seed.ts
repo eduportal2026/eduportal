@@ -1,17 +1,21 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');
   
+  const adminPassword = await bcrypt.hash('1234', 10);
+  const userPassword = await bcrypt.hash('password123', 10);
+  
   // Create Admin
   const admin = await prisma.user.upsert({
     where: { username: 'school' },
-    update: {},
+    update: { password: adminPassword },
     create: {
       username: 'school',
-      password: '1234',
+      password: adminPassword,
       role: 'ADMIN',
       name: 'Admin User',
     },
@@ -20,10 +24,10 @@ async function main() {
   // Create Teacher
   const teacher = await prisma.user.upsert({
     where: { username: 'teacher' },
-    update: {},
+    update: { password: userPassword },
     create: {
       username: 'teacher',
-      password: 'password123',
+      password: userPassword,
       role: 'TEACHER',
       name: 'Teacher User',
     },
@@ -32,10 +36,10 @@ async function main() {
   // Create Student
   const student = await prisma.user.upsert({
     where: { username: 'student' },
-    update: {},
+    update: { password: userPassword },
     create: {
       username: 'student',
-      password: 'password123',
+      password: userPassword,
       role: 'STUDENT',
       name: 'Student User',
     },
