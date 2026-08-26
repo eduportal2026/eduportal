@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      String   @default("STUDENT") // ADMIN, TEACHER, STUDENT
+  name      String?
+  // Personal Info
+  title       String?  // คำนำหน้า (เด็กชาย, เด็กหญิง, นาย, นางสาว)
+  firstName   String?  // ชื่อ
+  lastName    String?  // นามสกุล
+  email       String?  // เมล์
+
+  // Academic Info
+  studentId   String?  @unique // รหัสนักเรียน
+  rollNumber  Int?     // ลำดับที่
+  gradeLevel  String?  // ระดับชั้นเรียน
+  room        String?  // ห้องเรียน
+
+  // Status: ACTIVE (ปกติ), TRANSFERRED (ย้ายสถานศึกษา), DROPOUT (ออก), GRADUATED (จบการศึกษา)
+  status      String   @default("ACTIVE")
+
+  createdAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses   Course[]
+  progress  LessonProgress[]
+  quizResults QuizResult[]
+  submissions AssignmentSubmission[]
+  attendance  Attendance[]
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  teacherId   String
+  teacher     User     @relation(fields: [teacherId], references: [id])
+  lessons     Lesson[]
+  assignments Assignment[]
+  attendance  Attendance[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Lesson {
+  id           String   @id @default(cuid())
+  title        String
+  content      String
+  isVisible    Boolean  @default(false) // Visibility control
+  timeRequired Int      @default(60) // Expected time in minutes
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id])
+  progress     LessonProgress[]
+  quizzes      Quiz[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model LessonProgress {
+  id           String   @id @default(cuid())
+  timeSpent    Int      @default(0) // Time spent in seconds
+  isCompleted  Boolean  @default(false)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  lessonId     String
+  lesson       Lesson   @relation(fields: [lessonId], references: [id])
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("POST_TEST") // PRE_TEST, POST_TEST, EXERCISE
+  lessonId    String?
+  lesson      Lesson?  @relation(fields: [lessonId], references: [id])
+  questions   Question[]
+  results     QuizResult[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  text          String   // Can contain LaTeX
+  options       String   // JSON string of options e.g. ["A", "B", "C", "D"]
+  correctAnswer String
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model QuizResult {
+  id          String   @id @default(cuid())
+  score       Int
+  totalScore  Int
+  answers     String?  // JSON string of student's answers { "questionId": "selectedOptionIndex" }
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  dueDate     DateTime
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+  submissions AssignmentSubmission[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AssignmentSubmission {
+  id           String   @id @default(cuid())
+  content      String   // URL or text
+  score        Int?
+  feedback     String?
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Attendance {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  status      String   @default("PRESENT") // PRESENT, LATE, ABSENT
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model AppLink {
+  id          String   @id @default(cuid())
+  name        String   // ชื่อระบบ เช่น "ระบบเช็คชื่อ"
+  description String?  // คำอธิบาย
+  url         String   // ลิงก์ปลายทาง
+  icon        String?  // ไอคอน
+  imageUrl    String?  // ลิงก์รูปภาพ Thumbnail (ถ้ามี)
+  category    String   @default("ทั่วไป") // หมวดหมู่ เช่น "สำหรับนักเรียน", "สำหรับครู"
+  visibility  String   @default("ALL") // ALL, TEACHER_ONLY, ADMIN_ONLY
+  isActive    Boolean  @default(true)
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
