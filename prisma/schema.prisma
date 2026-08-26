@@ -49,6 +49,7 @@ model Course {
   description String?
   teacherId   String
   teacher     User     @relation(fields: [teacherId], references: [id])
+  targetRoom  String?  // e.g., "ม.1/1"
   lessons     Lesson[]
   assignments Assignment[]
   attendance  Attendance[]
