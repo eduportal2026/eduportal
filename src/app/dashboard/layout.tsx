@@ -36,12 +36,14 @@ export default async function DashboardLayout({
               <Link href="/dashboard/quiz" className="nav-link">คลังแบบทดสอบ</Link>
               <Link href="/dashboard/attendance" className="nav-link">จัดการใบงานและเช็คชื่อ</Link>
               <Link href="/dashboard/analysis" className="nav-link">วิเคราะห์ข้อสอบ (Item Analysis)</Link>
+              <Link href="/dashboard/settings" className="nav-link">ตั้งค่าบัญชี (Settings)</Link>
             </>
           ) : (
             <>
               <Link href="/dashboard/courses" className="nav-link">บทเรียนของฉัน</Link>
               <Link href="/dashboard/quiz" className="nav-link">แบบทดสอบ</Link>
               <Link href="/dashboard/attendance" className="nav-link">ผลการเรียน/เวลาเรียน</Link>
+              <Link href="/dashboard/settings" className="nav-link">ตั้งค่าบัญชี (Settings)</Link>
             </>
           )}
         </nav>
