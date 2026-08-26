@@ -61,7 +61,7 @@ export default function QuizViewer({ quizId, title, questions, onSubmit }: QuizV
   };
 
   const renderTextWithMath = (text: string) => {
-    const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/gs);
+    const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
     return parts.map((part, index) => {
       if (part.startsWith('$$') && part.endsWith('$$')) {
         const mathContent = part.substring(2, part.length - 2);

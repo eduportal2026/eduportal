@@ -16,7 +16,7 @@ export default function MathInputPreview({ label, value, onChange, placeholder =
   // Reuse the logic to detect if a text chunk is math (surrounded by $$ or $)
   const renderTextWithMath = (text: string) => {
     if (!text) return null;
-    const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/gs);
+    const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
     
     return parts.map((part, index) => {
       if (part.startsWith('$$') && part.endsWith('$$')) {
