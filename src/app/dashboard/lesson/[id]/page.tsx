@@ -2,13 +2,14 @@ import { auth } from "@/auth";
 import TimeTracker from "@/components/TimeTracker";
 import Link from "next/link";
 
-export default async function LessonPage({ params }: { params: { id: string } }) {
+export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await auth();
   const role = (session?.user as any)?.role || "STUDENT";
   
   // ในระบบจริงจะมีการ Query จากฐานข้อมูล
   const mockLesson = {
-    id: params.id,
+    id: id,
     title: "บทที่ 1: ตรรกศาสตร์เบื้องต้น",
     content: "เนื้อหาเกี่ยวกับการให้เหตุผล ประพจน์ ตัวเชื่อม และการหาค่าความจริง... (เนื้อหาจะถูกจัดเก็บในฐานข้อมูล)",
     timeRequired: 120, // 2 minutes for testing

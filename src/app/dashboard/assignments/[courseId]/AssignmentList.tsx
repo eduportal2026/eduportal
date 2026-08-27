@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { addAssignment, deleteAssignment } from '../actions';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function AssignmentList({ courseId, assignments }: { courseId: string, assignments: any[] }) {
@@ -16,7 +17,6 @@ export default function AssignmentList({ courseId, assignments }: { courseId: st
     if (res.success) {
       setFormData({ title: '', description: '', dueDate: '' });
       router.refresh();
-      setTimeout(() => window.location.reload(), 500);
     } else {
       alert(res.error);
     }
@@ -27,7 +27,6 @@ export default function AssignmentList({ courseId, assignments }: { courseId: st
     if (confirm('ยืนยันการลบใบงานนี้?')) {
       await deleteAssignment(id, courseId);
       router.refresh();
-      setTimeout(() => window.location.reload(), 500);
     }
   };
 
@@ -70,9 +69,9 @@ export default function AssignmentList({ courseId, assignments }: { courseId: st
             
             <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
               <h4 style={{ fontWeight: 'bold', marginBottom: '1rem' }}>คนส่งงาน ({assign.submissions.length} คน)</h4>
-              <a href={`/dashboard/assignments/${courseId}/${assign.id}`} className="btn-primary" style={{ textDecoration: 'none', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+              <Link href={`/dashboard/assignments/${courseId}/${assign.id}`} className="btn-primary" style={{ textDecoration: 'none', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
                 ตรวจงานและให้คะแนน
-              </a>
+              </Link>
             </div>
           </div>
         ))}

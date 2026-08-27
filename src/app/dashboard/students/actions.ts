@@ -69,6 +69,12 @@ export async function updateStudent(id: string, data: any) {
   }
 
   try {
+    // Verify target user is actually a STUDENT (prevent privilege escalation)
+    const targetUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (!targetUser || targetUser.role !== 'STUDENT') {
+      return { success: false, error: 'ไม่สามารถแก้ไขข้อมูลผู้ใช้ที่ไม่ใช่นักเรียนได้' };
+    }
+
     // Basic uniqueness check for username/studentId on update (ignoring self)
     if (data.username) {
       const existing = await prisma.user.findFirst({
@@ -123,6 +129,12 @@ export async function updateStudentStatus(id: string, status: string) {
   }
 
   try {
+    // Verify target user is actually a STUDENT
+    const targetUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (!targetUser || targetUser.role !== 'STUDENT') {
+      return { success: false, error: 'ไม่สามารถเปลี่ยนสถานะผู้ใช้ที่ไม่ใช่นักเรียนได้' };
+    }
+
     await prisma.user.update({
       where: { id },
       data: { status }

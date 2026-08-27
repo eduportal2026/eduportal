@@ -41,6 +41,9 @@ model User {
   quizResults QuizResult[]
   submissions AssignmentSubmission[]
   attendance  Attendance[]
+
+  @@index([role, room])
+  @@index([role, status])
 }
 
 model Course {
@@ -55,6 +58,9 @@ model Course {
   attendance  Attendance[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([teacherId])
+  @@index([targetRoom])
 }
 
 model Lesson {
@@ -103,6 +109,8 @@ model Question {
   correctAnswer String
   quizId        String
   quiz          Quiz     @relation(fields: [quizId], references: [id])
+
+  @@index([quizId])
 }
 
 model QuizResult {
@@ -115,6 +123,9 @@ model QuizResult {
   quizId      String
   quiz        Quiz     @relation(fields: [quizId], references: [id])
   createdAt   DateTime @default(now())
+
+  @@index([quizId])
+  @@index([userId])
 }
 
 model Assignment {
@@ -127,6 +138,8 @@ model Assignment {
   submissions AssignmentSubmission[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([courseId])
 }
 
 model AssignmentSubmission {
@@ -140,6 +153,9 @@ model AssignmentSubmission {
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([assignmentId])
+  @@index([userId])
 }
 
 model Attendance {
@@ -151,6 +167,9 @@ model Attendance {
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
+
+  @@index([courseId, date])
+  @@index([userId])
 }
 
 model AppLink {
@@ -166,4 +185,6 @@ model AppLink {
   orderIndex  Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([isActive, orderIndex])
 }

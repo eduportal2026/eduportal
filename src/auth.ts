@@ -13,37 +13,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null;
-        
-        console.log('--- LOGIN ATTEMPT ---');
-        console.log('Username:', credentials.username);
-        console.log('Password length:', (credentials.password as string)?.length);
 
-        // Find user in DB
+        // Find user in DB - only fetch needed fields
         const user = await prisma.user.findUnique({
           where: { username: credentials.username as string },
+          select: { id: true, name: true, role: true, password: true, status: true }
         });
 
-        console.log('User found in DB:', user ? 'YES' : 'NO');
+        if (!user) return null;
+
+        // Block inactive accounts
+        if (user.status !== 'ACTIVE') return null;
         
+        // Compare hashed passwords only (no plaintext fallback)
         let isPasswordMatch = false;
-        if (user) {
-          try {
-            isPasswordMatch = await bcrypt.compare(credentials.password as string, user.password);
-          } catch (e) {
-            console.error('Bcrypt error:', e);
-          }
-          
-          // Fallback for non-hashed old passwords during transition
-          if (!isPasswordMatch && user.password === credentials.password) {
-            isPasswordMatch = true;
-          }
+        try {
+          isPasswordMatch = await bcrypt.compare(credentials.password as string, user.password);
+        } catch (e) {
+          // bcrypt error - password format invalid
+          return null;
         }
 
-        if (user && isPasswordMatch) {
+        if (isPasswordMatch) {
           return {
             id: user.id,
             name: user.name,
-            role: user.role, // Custom field
+            role: user.role,
           };
         }
         return null;

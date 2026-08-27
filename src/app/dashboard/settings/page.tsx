@@ -8,7 +8,7 @@ export default async function SettingsPage() {
   if (!session) redirect('/login');
 
   const userId = (session.user as any).id;
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true, username: true } });
 
   if (!user) redirect('/login');
 

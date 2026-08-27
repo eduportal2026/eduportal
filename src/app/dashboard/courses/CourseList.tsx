@@ -17,7 +17,6 @@ export default function CourseList({ initialCourses }: { initialCourses: any[] }
     if (res.success) {
       setFormData({ title: '', description: '', targetRoom: '' });
       router.refresh(); 
-      setTimeout(() => window.location.reload(), 500);
     } else {
       alert(res.error);
     }
@@ -28,7 +27,6 @@ export default function CourseList({ initialCourses }: { initialCourses: any[] }
     if (confirm('ยืนยันการลบวิชานี้? ข้อมูลใบงานและการเช็คชื่อที่ผูกกับวิชานี้อาจได้รับผลกระทบ')) {
       await deleteCourse(id);
       router.refresh();
-      setTimeout(() => window.location.reload(), 500);
     }
   };
 

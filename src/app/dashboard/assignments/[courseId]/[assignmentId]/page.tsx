@@ -2,8 +2,10 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import GradingView from './GradingView';
+import Link from 'next/link';
 
-export default async function AssignmentGradingPage({ params }: { params: { courseId: string, assignmentId: string } }) {
+export default async function AssignmentGradingPage({ params }: { params: Promise<{ courseId: string, assignmentId: string }> }) {
+  const { courseId, assignmentId } = await params;
   const session = await auth();
   if (!session) redirect('/login');
   
@@ -11,7 +13,7 @@ export default async function AssignmentGradingPage({ params }: { params: { cour
   if (role !== 'TEACHER' && role !== 'ADMIN') redirect('/dashboard/assignments');
 
   const assignment = await prisma.assignment.findUnique({
-    where: { id: params.assignmentId },
+    where: { id: assignmentId },
     include: {
       course: true,
       submissions: {
@@ -20,7 +22,7 @@ export default async function AssignmentGradingPage({ params }: { params: { cour
     }
   });
 
-  if (!assignment) redirect(`/dashboard/assignments/${params.courseId}`);
+  if (!assignment) redirect(`/dashboard/assignments/${courseId}`);
 
   // Fetch all students in the course target room
   const students = await prisma.user.findMany({
@@ -28,17 +30,22 @@ export default async function AssignmentGradingPage({ params }: { params: { cour
       role: 'STUDENT',
       ...(assignment.course.targetRoom ? { room: assignment.course.targetRoom } : {})
     },
+    select: {
+      id: true,
+      name: true,
+      rollNumber: true
+    },
     orderBy: { rollNumber: 'asc' }
   });
 
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <a href={`/dashboard/assignments/${params.courseId}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>&larr; กลับหน้าใบงาน</a>
+        <Link href={`/dashboard/assignments/${courseId}`} style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>&larr; กลับหน้าใบงาน</Link>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>ตรวจงาน: {assignment.title}</h1>
       </div>
 
-      <GradingView assignment={assignment} students={students} courseId={params.courseId} />
+      <GradingView assignment={assignment} students={students} courseId={courseId} />
     </div>
   );
 }

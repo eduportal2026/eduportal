@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import Papa from 'papaparse';
 import { addStudent, updateStudent, updateStudentStatus, importStudents } from './actions';
 
 export default function StudentClientPage({ initialStudents }: { initialStudents: any[] }) {
@@ -110,11 +109,12 @@ export default function StudentClientPage({ initialStudents }: { initialStudents
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsImporting(true);
+    const Papa = (await import('papaparse')).default;
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
