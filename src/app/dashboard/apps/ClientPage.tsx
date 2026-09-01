@@ -61,53 +61,59 @@ export default function AppsClientPage({ initialApps }: { initialApps: any[] }) 
     }
   };
 
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
 
-    let finalImageUrl = formData.imageUrl;
+    try {
+      let finalImageUrl = formData.imageUrl;
 
-    // Upload file if selected
-    if (file) {
-      const uploadData = new FormData();
-      uploadData.append('file', file);
-      
-      try {
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadData
-        });
-        const uploadResult = await uploadRes.json();
-        
-        if (uploadResult.success) {
-          finalImageUrl = uploadResult.url;
-        } else {
-          setError('อัปโหลดรูปภาพไม่สำเร็จ: ' + uploadResult.error);
+      // Convert file directly to Base64 on client (instant and reliable)
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          setError('ไฟล์มีขนาดใหญ่เกิน 5MB กรุณาเลือกไฟล์ที่เล็กลง');
           setIsSubmitting(false);
           return;
         }
-      } catch (err) {
-        setError('เกิดข้อผิดพลาดในการเชื่อมต่อเพื่ออัปโหลดไฟล์');
-        setIsSubmitting(false);
-        return;
+
+        try {
+          finalImageUrl = await convertFileToBase64(file);
+        } catch (err) {
+          setError('เกิดข้อผิดพลาดในการอ่านไฟล์รูปภาพ');
+          setIsSubmitting(false);
+          return;
+        }
       }
-    }
 
-    const payload = { ...formData, imageUrl: finalImageUrl };
+      const payload = { ...formData, imageUrl: finalImageUrl };
 
-    let res;
-    if (editingId) {
-      res = await updateAppLink(editingId, payload);
-    } else {
-      res = await addAppLink(payload);
-    }
+      let res;
+      if (editingId) {
+        res = await updateAppLink(editingId, payload);
+      } else {
+        res = await addAppLink(payload);
+      }
 
-    if (res.success) {
-      setShowModal(false);
-      window.location.reload();
-    } else {
-      setError(res.error || 'เกิดข้อผิดพลาด');
+      if (res && res.success) {
+        setShowModal(false);
+        window.location.reload();
+      } else {
+        setError(res?.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        setIsSubmitting(false);
+      }
+    } catch (err: any) {
+      console.error('Submit error:', err);
+      setError(err?.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
       setIsSubmitting(false);
     }
   };
